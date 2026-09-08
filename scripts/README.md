@@ -1,15 +1,15 @@
 # Auto-update ingestion
 
-Place one ZIP per channel in its inbox folder:
+Place all three daily ZIP files directly in the shared inbox:
 
 ```text
-data/inbox/qc/QC-2026-09-09.zip
-data/inbox/ps/PS-2026-09-09.zip
-data/inbox/tol/TOL-2026-09-09.zip
+data/inbox/QC-2026-09-09.zip
+data/inbox/PS-2026-09-09.zip
+data/inbox/TOL-2026-09-09.zip
 ```
 
-Each ZIP must contain exactly one `.csv`. The channel is read from the inbox
-folder or ZIP filename, and the CSV is mapped to the canonical fields:
+Each ZIP must contain exactly one `.csv`. The channel is read from the ZIP
+filename (`QC`, `PS`, or `TOL`), and the CSV is mapped to the canonical fields:
 
 ```text
 Sales Channel

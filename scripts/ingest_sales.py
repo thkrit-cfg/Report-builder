@@ -245,7 +245,7 @@ def main() -> int:
     for path in (inbox, root / "data" / "logs", root / "data" / "quarantine", db_path.parent):
         path.mkdir(parents=True, exist_ok=True)
 
-    zips = sorted(inbox.rglob("*.zip"))
+    zips = sorted(inbox.glob("*.zip"))
     if not zips:
         print("No ZIP files found in data/inbox; nothing to merge.")
         return 0
