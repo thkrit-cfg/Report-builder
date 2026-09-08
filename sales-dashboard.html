@@ -79,9 +79,9 @@
       <div id="subscriptionList" class="subscription-list"></div>
     </section>
     <section class="grid kpis presentation-kpis">
-      <article class="card"><div class="kpi-label">Net sales</div><div id="sales" class="kpi-value">—</div></article>
-      <article class="card"><div class="kpi-label">Order Quantity</div><div id="quantity" class="kpi-value">—</div></article>
-      <article class="card"><div class="kpi-label">AOV</div><div id="aov" class="kpi-value">—</div></article>
+      <article class="card"><div class="kpi-label">Net sales</div><div id="sales" class="kpi-value">—</div><div id="salesNote" class="kpi-note">Prior: —</div></article>
+      <article class="card"><div class="kpi-label">Order Quantity</div><div id="quantity" class="kpi-value">—</div><div id="quantityNote" class="kpi-note">Prior: —</div></article>
+      <article class="card"><div class="kpi-label">AOV</div><div id="aov" class="kpi-value">—</div><div id="aovNote" class="kpi-note">Prior: —</div></article>
       <article class="card"><div class="kpi-label">Active stores</div><div id="stores" class="kpi-value">—</div></article>
     </section>
     <section class="grid analytics">
@@ -216,7 +216,10 @@
     }
     function render(rows,q,comparisonRows){
       const sales=rows.reduce((a,x)=>a+x.sales,0), qty=rows.reduce((a,x)=>a+x.orderQuantity,0), stores=new Set(rows.map(x=>x.code)).size;
-      $("sales").textContent=money(sales); $("quantity").textContent=number(qty); $("aov").textContent=qty ? money(sales/qty) : "—"; $("stores").textContent=number(stores);
+      const priorSales=(comparisonRows||[]).reduce((a,x)=>a+x.sales,0), priorQty=(comparisonRows||[]).reduce((a,x)=>a+x.orderQuantity,0), aov=qty?sales/qty:0, priorAov=priorQty?priorSales/priorQty:0;
+      const comparison=(current,prior,formatter)=>prior?`Prior: ${formatter(prior)} · ${current/prior>=1?"+":""}${((current-prior)/prior*100).toFixed(1)}%`:"Prior: —";
+      $("sales").textContent=money(sales); $("quantity").textContent=number(qty); $("aov").textContent=qty ? money(aov) : "—"; $("stores").textContent=number(stores);
+      $("salesNote").textContent=comparison(sales,priorSales,money); $("quantityNote").textContent=comparison(qty,priorQty,number); $("aovNote").textContent=comparison(aov,priorAov,money);
       renderTrend(rows,comparisonRows); renderPresentationChannels(rows,comparisonRows); renderBreakdown(rows,"store","topStores",5); renderTable(rows,q); renderPresentationHeader(rows,comparisonRows); renderChannelSummary(rows,comparisonRows);
     }
     function presentationChannel(row){const channel=(row.channel||"").toUpperCase();if(channel==="PERSONAL SHOPPER"||channel==="PS")return "PS";if(channel==="TOL"||channel==="TOPS ONLINE")return "TOL";return "QC"}
