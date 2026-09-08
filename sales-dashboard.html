@@ -30,6 +30,7 @@
     .presentation-bars{height:250px;display:flex;align-items:flex-end;justify-content:space-around;gap:10px;border-bottom:1px solid #aaa;padding:16px 8px 0}.presentation-bar-group{height:100%;flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center}.presentation-bar-label{font-size:11px;font-weight:800;margin-bottom:5px}.presentation-bars-inner{height:88%;display:flex;align-items:flex-end;gap:4px}.pbar{display:block;position:relative;width:22px;min-height:2px;border-radius:2px 2px 0 0}.pbar.prior{background:#a9a9a9}.pbar.actual{background:#ed1c24}.pbar b{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:9px;white-space:nowrap;font-weight:700}
     .presentation-panel .trend-legend{margin-top:12px}.presentation-panel .legend-row{grid-template-columns:9px 1fr auto}.presentation-panel .bar{background:#e2e2e2}.presentation-panel .dot{background:#ed1c24!important}.presentation-panel .legend-row:nth-child(2n) .dot{background:#a9a9a9!important}
     .presentation-panel .bar-current{fill:#ed1c24}.presentation-panel .bar-prior{fill:#a9a9a9}.presentation-panel .gridline{stroke:#dedede}
+    .channel-checks{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#fff;border:1px solid var(--line);border-radius:9px;padding:9px 12px}.channel-check{display:flex;align-items:center;gap:5px;font-size:13px;font-weight:650;cursor:pointer;white-space:nowrap}.channel-check input{width:15px;height:15px;accent-color:#ed1c24}
     .analytics{align-items:stretch}.analytics .wide{grid-column:auto}
     @media(max-width:1050px){.analytics{grid-template-columns:1fr 1fr}.analytics .wide{grid-column:1/-1}.presentation-panel{min-height:0}}
     .copilot-panel{margin-bottom:18px}.copilot-toolbar{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.copilot-auth{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.copilot-auth-status{font-size:12px;color:var(--muted);font-weight:650}.copilot-config{margin-top:6px}.copilot-grid{display:grid;grid-template-columns:1fr auto;gap:10px;margin-top:16px}.copilot-grid textarea{width:100%;min-height:76px;resize:vertical;border:1px solid var(--line);border-radius:9px;padding:10px 12px;color:var(--ink);font:inherit}.copilot-grid textarea:focus{outline:2px solid rgba(36,107,254,.18);border-color:var(--blue)}.copilot-reply{white-space:pre-wrap;margin-top:12px;color:var(--ink)}button:disabled{cursor:not-allowed;opacity:.55}
@@ -56,7 +57,7 @@
       <div id="copilotReply" class="copilot-reply hint" role="status"></div>
     </section>
     <section class="filters">
-      <select id="channel"><option value="">All sales channels</option></select>
+      <div id="channelChecks" class="channel-checks" aria-label="Sales stream filters"></div>
       <select id="ops"><option value="">All heads of ops</option></select>
       <select id="datePreset" aria-label="Date preset"><option value="last7">Last 7 days</option><option value="yesterday">Yesterday</option><option value="mtd">MTD</option><option value="ytd">YTD</option><option value="custom">Custom range</option></select>
       <input id="from" type="date" aria-label="From date">
@@ -121,20 +122,21 @@
         ?"n8n handles Copilot Studio/backend authentication. The browser sends prompt and view settings only."
         :"Commands are applied locally. Configure n8n later for natural-language Copilot.";
     }
-    function currentViewSettings(){return {channel:$("channel").value,ops:$("ops").value,from:$("from").value,to:$("to").value,trendGranularity,showLabels}}
+    function selectedChannels(){return [...document.querySelectorAll("#channelChecks input:checked")].map(input=>input.value)}
+    function currentViewSettings(){return {channel:selectedChannels(),ops:$("ops").value,from:$("from").value,to:$("to").value,trendGranularity,showLabels}}
     function applyViewSettings(candidate){
       if(!candidate || typeof candidate!=="object" || Array.isArray(candidate)) throw new Error("Copilot returned invalid view settings.");
       const rejected=[], applied={}, allowed=new Set(["channel","ops","from","to","trendGranularity","showLabels"]);
       Object.keys(candidate).forEach(key=>{if(!allowed.has(key)) rejected.push(key)});
       const optionValues=id=>new Set([...$(id).options].map(option=>option.value));
       const accept=(key,valid)=>{if(!(key in candidate)) return; if(valid(candidate[key])) applied[key]=candidate[key]; else rejected.push(key)};
-      accept("channel",value=>typeof value==="string" && optionValues("channel").has(value));
+      accept("channel",value=>Array.isArray(value) && value.every(item=>["O2O","PS","QC","TOL"].includes(item)));
       accept("ops",value=>typeof value==="string" && optionValues("ops").has(value));
       accept("from",value=>typeof value==="string" && (!value || /^\d{4}-\d{2}-\d{2}$/.test(value)));
       accept("to",value=>typeof value==="string" && (!value || /^\d{4}-\d{2}-\d{2}$/.test(value)));
       accept("trendGranularity",value=>["month","week","day"].includes(value));
       accept("showLabels",value=>typeof value==="boolean");
-      if("channel" in applied) $("channel").value=applied.channel;
+      if("channel" in applied){document.querySelectorAll("#channelChecks input").forEach(input=>{input.checked=applied.channel.includes(input.value)})}
       if("ops" in applied) $("ops").value=applied.ops;
       if("from" in applied) $("from").value=applied.from;
       if("to" in applied) $("to").value=applied.to;
@@ -151,11 +153,9 @@
       if(/\b(labels?|data labels?)\s+(on|show|enable)\b|\bturn\s+(labels?|data labels?)\s+on\b/.test(text)){changes.showLabels=true;notes.push("labels on")}
       const preset=text.includes("yesterday")?"yesterday":/\bmtd\b|month to date/.test(text)?"mtd":/\bytd\b|year to date/.test(text)?"ytd":/last\s+7|past\s+7|recent\s+7/.test(text)?"last7":null;
       if(preset){applyDatePreset(preset);$("datePreset").value=preset;notes.push(preset==="last7"?"last 7 days":preset.toUpperCase())}
-      const channelOptions=[...$("channel").options].map(option=>option.value).filter(Boolean);
-      const channelAliases={QC:"GRAB",PS:"PERSONAL SHOPPER",TOL:"TOL"};
-      const channel=channelOptions.find(value=>text.includes(value.toLowerCase())) || Object.entries(channelAliases).find(([alias,value])=>text.includes(alias.toLowerCase())&&channelOptions.includes(value))?.[1];
-      if(channel){changes.channel=channel;notes.push(channel)}
-      if(/\b(all|clear|reset)\s+(channels?|sales channels?)\b/.test(text)){changes.channel="";notes.push("all channels")}
+      const channelChoices=["O2O","PS","QC","TOL"], requestedChannels=channelChoices.filter(value=>text.includes(value.toLowerCase()));
+      if(requestedChannels.length){changes.channel=requestedChannels;notes.push(requestedChannels.join(" + "))}
+      if(/\b(all|clear|reset)\s+(channels?|sales channels?)\b/.test(text)){changes.channel=["O2O"];notes.push("O2O")}
       const opsOptions=[...$("ops").options].map(option=>option.value).filter(Boolean);
       const ops=opsOptions.find(value=>text.includes(value.toLowerCase()));
       if(ops){changes.ops=ops;notes.push(ops)}
@@ -181,7 +181,8 @@
     function setStatus(){ }
     function populateFilters(){
       const unique = key => [...new Set(all.map(x=>x[key]).filter(Boolean))].sort();
-      $("channel").innerHTML = '<option value="">All sales channels</option>' + unique("channel").map(x=>`<option>${esc(x)}</option>`).join("");
+      $("channelChecks").innerHTML=["O2O","PS","QC","TOL"].map(value=>`<label class="channel-check"><input type="checkbox" value="${value}" ${value==="O2O"?"checked":""}>${value}</label>`).join("");
+      $("channelChecks").addEventListener("change",e=>{if(e.target.value==="O2O"&&e.target.checked)document.querySelectorAll("#channelChecks input:not([value='O2O'])").forEach(input=>{input.checked=false});if(e.target.value!=="O2O"&&e.target.checked){const o2o=document.querySelector("#channelChecks input[value='O2O']");if(o2o)o2o.checked=false}if(!selectedChannels().length){document.querySelector("#channelChecks input[value='O2O']").checked=true}apply()});
       $("ops").innerHTML = '<option value="">All heads of ops</option>' + unique("ops").map(x=>`<option>${esc(x)}</option>`).join("");
       const dates = all.map(x=>x.date).filter(Boolean).sort(); if(dates.length){$("from").min=dates[0];$("from").max=dates.at(-1);$("to").min=dates[0];$("to").max=dates.at(-1);setDefaultDateRange(dates.at(-1))}
     }
@@ -201,8 +202,8 @@
     }
     function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
     function apply(){
-      const channel=$("channel").value, ops=$("ops").value, from=$("from").value, to=$("to").value, q=$("search").value.toLowerCase();
-      const matchesScope=x=>(!channel||x.channel===channel)&&(!ops||x.ops===ops);
+      const channels=selectedChannels(), ops=$("ops").value, from=$("from").value, to=$("to").value, q=$("search").value.toLowerCase();
+      const matchesScope=x=>(channels.includes("O2O")||!channels.length||(channels.includes("QC")&&!["PERSONAL SHOPPER","TOL"].includes(x.channel))||(channels.includes("PS")&&x.channel==="PERSONAL SHOPPER")||(channels.includes("TOL")&&x.channel==="TOL"))&&(!ops||x.ops===ops);
       filtered=all.filter(x=>matchesScope(x)&&(!from||x.date>=from)&&(!to||x.date<=to));
       let comparisonRows=null;
       if(from||to){
@@ -259,7 +260,7 @@
     function renderBreakdown(rows,key,id,limit){const data=aggregate(rows,key).slice(0,limit), total=data.reduce((a,x)=>a+x.sales,0);$(id).innerHTML=data.length?data.map((x,i)=>`<div class="legend-row"><span class="dot" style="background:${colors[i%colors.length]}"></span><div title="${esc(x.name)}">${esc(x.name)}<div class="bar"><span style="width:${total?x.sales/total*100:0}%;background:${colors[i%colors.length]}"></span></div></div><strong>${money(x.sales)}</strong></div>`).join(""):'<div class="empty">No data</div>'}
     function renderTable(rows,q){const byStore={};rows.forEach(x=>{if(!byStore[x.store])byStore[x.store]={code:x.code,ops:x.ops,orderCount:0,orderQuantity:0};byStore[x.store].orderCount+=x.orderCount;byStore[x.store].orderQuantity+=x.orderQuantity});const data=aggregate(rows,"store").filter(x=>{const s=byStore[x.name];return !q||x.name.toLowerCase().includes(q)||s.code.toLowerCase().includes(q)||s.ops.toLowerCase().includes(q)}); $("tableHint").textContent=`Showing ${number(Math.min(data.length,100))} of ${number(data.length)} stores`; $("rows").innerHTML=data.slice(0,100).map((x,i)=>{const s=byStore[x.name];return `<tr><td class="rank">${i+1}</td><td><strong>${esc(x.name)}</strong></td><td>${esc(s.code)}</td><td>${esc(s.ops)}</td><td class="num">${number(s.orderCount)}</td><td class="num">${number(s.orderQuantity)}</td><td class="num"><strong>${money(x.sales)}</strong></td></tr>`}).join("")||'<tr><td colspan="7" class="empty">No matching stores.</td></tr>'}
     function exportRows(){const q=$("search").value.toLowerCase(), byStore={};filtered.forEach(x=>{if(!byStore[x.store])byStore[x.store]={code:x.code,ops:x.ops,orderCount:0,orderQuantity:0};byStore[x.store].orderCount+=x.orderCount;byStore[x.store].orderQuantity+=x.orderQuantity});return aggregate(filtered,"store").filter(x=>{const s=byStore[x.name];return !q||x.name.toLowerCase().includes(q)||s.code.toLowerCase().includes(q)||s.ops.toLowerCase().includes(q)}).map(x=>{const s=byStore[x.name];return {"Store":x.name,"Store Code":s.code,"Head of Ops":s.ops,"Orders (transaction rows)":s.orderCount,"Orders (quantity)":Number(s.orderQuantity.toFixed(3)),"Net Sales (THB)":Number(x.sales.toFixed(2))}})}
-    function currentSubscription(){return {channel:$("channel").value,ops:$("ops").value,from:$("from").value,to:$("to").value,search:$("search").value,trendGranularity,showLabels}}
+    function currentSubscription(){return {channel:selectedChannels(),ops:$("ops").value,from:$("from").value,to:$("to").value,search:$("search").value,trendGranularity,showLabels}}
     function savedSubscriptions(){try{return JSON.parse(localStorage.getItem("qc-sales-subscriptions")||"[]")}catch{return []}}
     function renderSubscriptions(){const items=savedSubscriptions();$("subscriptionList").innerHTML=items.length?items.map((x,i)=>`<div class="subscription-item"><span><strong>${esc(x.email)}</strong> · ${esc(x.cadence)} · ${esc(x.formats.join(" + "))} · ${esc(x.time)}</span><button type="button" data-subscription="${i}">Remove</button></div>`).join(""):""}
     async function saveSubscription(){
@@ -272,9 +273,9 @@
     function exportXlsx(){if(!window.XLSX)throw new Error("Excel export library is unavailable.");const rows=exportRows(),sheet=XLSX.utils.json_to_sheet(rows),book=XLSX.utils.book_new();XLSX.utils.book_append_sheet(book,sheet,"Store Performance");XLSX.writeFile(book,"qc-sales-dashboard.xlsx")}
     async function exportPng(){if(!window.html2canvas)throw new Error("Image export library is unavailable.");const canvas=await html2canvas(document.querySelector(".shell"),{backgroundColor:"#f4f7fb",scale:2});const link=document.createElement("a");link.download="qc-sales-dashboard.png";link.href=canvas.toDataURL("image/png");link.click()}
     function load(raw){if(!Array.isArray(raw)||!raw.length)throw new Error("Expected a non-empty JSON array.");all=parse(raw);populateFilters();apply()}
-    ["channel","ops","from","to","search"].forEach(id=>$(id).addEventListener(id==="search"?"input":"change",()=>{if(id==="from"||id==="to")$("datePreset").value="custom";apply()}));
+    ["ops","from","to","search"].forEach(id=>$(id).addEventListener(id==="search"?"input":"change",()=>{if(id==="from"||id==="to")$("datePreset").value="custom";apply()}));
     $("datePreset").addEventListener("change",e=>{applyDatePreset(e.target.value);apply()});
-    $("reset").addEventListener("click",()=>{["channel","ops","search"].forEach(id=>$(id).value="");const dates=all.map(x=>x.date).filter(Boolean).sort();if(dates.length)setDefaultDateRange(dates.at(-1));apply()});
+    $("reset").addEventListener("click",()=>{["ops","search"].forEach(id=>$(id).value="");document.querySelectorAll("#channelChecks input").forEach(input=>{input.checked=input.value==="O2O"});const dates=all.map(x=>x.date).filter(Boolean).sort();if(dates.length)setDefaultDateRange(dates.at(-1));apply()});
     $("labelsToggle").addEventListener("click",()=>{showLabels=!showLabels;$("labelsToggle").textContent=`Labels: ${showLabels?"On":"Off"}`;renderTrend(filtered,trendComparisonRows)});
     $("trendGranularity").addEventListener("change",e=>{trendGranularity=e.target.value;renderTrend(filtered,trendComparisonRows)});
     $("exportXlsx").addEventListener("click",()=>{try{exportXlsx()}catch(error){alert(error.message)}});
