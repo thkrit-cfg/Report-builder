@@ -79,10 +79,10 @@
       <div id="subscriptionList" class="subscription-list"></div>
     </section>
     <section class="grid kpis presentation-kpis">
-      <article class="card"><div class="kpi-label">Net sales</div><div id="sales" class="kpi-value">—</div><div id="salesNote" class="kpi-note">Load data to begin</div></article>
-      <article class="card"><div class="kpi-label">Order Quantity</div><div id="quantity" class="kpi-value">—</div><div id="quantityNote" class="kpi-note">Units/items from source quantity</div></article>
-      <article class="card"><div class="kpi-label">AOV</div><div id="aov" class="kpi-value">—</div><div id="aovNote" class="kpi-note">Net sales / order quantity</div></article>
-      <article class="card"><div class="kpi-label">Active stores</div><div id="stores" class="kpi-value">—</div><div id="storesNote" class="kpi-note">Unique store codes</div></article>
+      <article class="card"><div class="kpi-label">Net sales</div><div id="sales" class="kpi-value">—</div></article>
+      <article class="card"><div class="kpi-label">Order Quantity</div><div id="quantity" class="kpi-value">—</div></article>
+      <article class="card"><div class="kpi-label">AOV</div><div id="aov" class="kpi-value">—</div></article>
+      <article class="card"><div class="kpi-label">Active stores</div><div id="stores" class="kpi-value">—</div></article>
     </section>
     <section class="grid analytics">
       <article class="card wide presentation-panel"><div class="card-head"><div><h2 id="trendTitle">Monthly net sales trend</h2><div class="trend-controls"><select id="trendGranularity" aria-label="Trend granularity"><option value="month">Monthly</option><option value="week">Weekly</option><option value="day">Daily</option></select><div id="trendLegend" class="trend-legend"></div></div></div><div class="actions"><button id="labelsToggle" type="button">Labels: On</button></div></div><div id="trend" class="chart"></div><div id="trendCompare" class="trend-compare"></div></article>
@@ -217,10 +217,6 @@
     function render(rows,q,comparisonRows){
       const sales=rows.reduce((a,x)=>a+x.sales,0), qty=rows.reduce((a,x)=>a+x.orderQuantity,0), stores=new Set(rows.map(x=>x.code)).size;
       $("sales").textContent=money(sales); $("quantity").textContent=number(qty); $("aov").textContent=qty ? money(sales/qty) : "—"; $("stores").textContent=number(stores);
-      $("salesNote").textContent=rows.length ? `Average ${money(sales/rows.length)} per transaction` : "No matching rows";
-      $("quantityNote").textContent=rows.length ? `Units/items from source quantity · avg ${number(qty/rows.length)} per source row` : "Units/items from source quantity";
-      $("aovNote").textContent=qty ? "Net sales / order quantity" : "No matching quantity";
-      $("storesNote").textContent=stores ? `${number(stores)} unique store codes` : "Unique store codes";
       renderTrend(rows,comparisonRows); renderPresentationChannels(rows,comparisonRows); renderBreakdown(rows,"store","topStores",5); renderTable(rows,q); renderPresentationHeader(rows,comparisonRows); renderChannelSummary(rows,comparisonRows);
     }
     function presentationChannel(row){const channel=(row.channel||"").toUpperCase();if(channel==="PERSONAL SHOPPER"||channel==="PS")return "PS";if(channel==="TOL"||channel==="TOPS ONLINE")return "TOL";return "QC"}
