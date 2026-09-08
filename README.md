@@ -1,4 +1,13 @@
-# QC Sales Report Builder
+# O2O Sales Dashboard
+
+O2O covers three sales streams:
+
+- **QC** — Quick Commerce
+- **PS** — Personal Shopper
+- **TOL** — Tops Online
+
+The current local data bundle includes QC and PS data. TOL data can be added
+using the same normalized transaction schema.
 
 This repository contains the dashboard UI and database schema. Sales source
 files and the generated browser data bundle are intentionally kept local and
