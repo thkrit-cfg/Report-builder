@@ -80,8 +80,8 @@
     </section>
     <section class="grid kpis presentation-kpis">
       <article class="card"><div class="kpi-label">Net sales</div><div id="sales" class="kpi-value">—</div><div id="salesNote" class="kpi-note">Load data to begin</div></article>
-      <article class="card"><div class="kpi-label">Orders</div><div id="quantity" class="kpi-value">—</div><div id="quantityNote" class="kpi-note">Quantity-based orders</div></article>
-      <article class="card"><div class="kpi-label">Orders</div><div id="transactions" class="kpi-value">—</div><div id="transactionsNote" class="kpi-note">Transaction rows</div></article>
+      <article class="card"><div class="kpi-label">Order Quantity</div><div id="quantity" class="kpi-value">—</div><div id="quantityNote" class="kpi-note">Units/items from source quantity</div></article>
+      <article class="card"><div class="kpi-label">Order Count</div><div id="transactions" class="kpi-value">—</div><div id="transactionsNote" class="kpi-note">One count per source row</div></article>
       <article class="card"><div class="kpi-label">Active stores</div><div id="stores" class="kpi-value">—</div><div id="storesNote" class="kpi-note">Unique store codes</div></article>
     </section>
     <section class="grid analytics">
@@ -92,7 +92,7 @@
     <section class="card presentation-table"><h2>O2O Sales Summary</h2><div class="table-wrap"><table><thead><tr><th>Channel</th><th>Actual</th><th>% Chg.</th><th>% Var.</th></tr></thead><tbody id="channelSummary"></tbody></table></div></section>
     <section class="card table-card">
       <div class="table-head"><div><h2>Store performance</h2><div id="tableHint" class="hint"></div></div><div class="actions"><input id="search" type="search" placeholder="Search store, code, or Head of Ops…" style="max-width:300px"><button id="exportXlsx" type="button">Export .xlsx</button><button id="exportPng" type="button">Export .png</button></div></div>
-      <div class="table-wrap"><table><thead><tr><th>#</th><th>Store</th><th>Code</th><th>Head of ops</th><th>Orders</th><th>Orders</th><th>Net sales</th></tr></thead><tbody id="rows"><tr><td colspan="7" class="empty">Load the JSON file to see store performance.</td></tr></tbody></table></div>
+      <div class="table-wrap"><table><thead><tr><th>#</th><th>Store</th><th>Code</th><th>Head of ops</th><th>Order Count</th><th>Order Quantity</th><th>Net sales</th></tr></thead><tbody id="rows"><tr><td colspan="7" class="empty">Load the JSON file to see store performance.</td></tr></tbody></table></div>
     </section>
   </main>
   <script src="sales-data.js"></script>
@@ -218,8 +218,8 @@
       const sales=rows.reduce((a,x)=>a+x.sales,0), qty=rows.reduce((a,x)=>a+x.orderQuantity,0), orderCount=rows.reduce((a,x)=>a+x.orderCount,0), stores=new Set(rows.map(x=>x.code)).size;
       $("sales").textContent=money(sales); $("quantity").textContent=number(qty); $("transactions").textContent=number(orderCount); $("stores").textContent=number(stores);
       $("salesNote").textContent=rows.length ? `Average ${money(sales/rows.length)} per transaction` : "No matching rows";
-      $("quantityNote").textContent=rows.length ? `Quantity-based orders · avg ${number(qty/rows.length)} per transaction` : "Quantity-based orders";
-      $("transactionsNote").textContent=all.length ? `Transaction-row orders · ${((orderCount/all.length)*100).toFixed(1)}% of loaded rows` : "Transaction-row orders";
+      $("quantityNote").textContent=rows.length ? `Units/items · avg ${number(qty/rows.length)} per source row` : "Units/items from source quantity";
+      $("transactionsNote").textContent=all.length ? `One per source row · ${((orderCount/all.length)*100).toFixed(1)}% of loaded rows` : "One count per source row";
       $("storesNote").textContent=stores ? `${number(stores)} unique store codes` : "Unique store codes";
       renderTrend(rows,comparisonRows); renderPresentationChannels(rows,comparisonRows); renderBreakdown(rows,"store","topStores",5); renderTable(rows,q); renderPresentationHeader(rows,comparisonRows); renderChannelSummary(rows,comparisonRows);
     }
