@@ -1,6 +1,17 @@
 qc-sales 2025.json_label
 qc-sales 2026.json_label
 sales-data.js
+data/db/*
+!data/db/.gitkeep
+data/logs/*
+!data/logs/.gitkeep
+data/quarantine/*
+!data/quarantine/.gitkeep
+data/inbox/*
+!data/inbox/.gitkeep
+!data/inbox/*/
+!data/inbox/*/.gitkeep
+O2O Sales Report.xlsx
 QC-sales 2025-2026.json_label.json_label
 QC-sales 2025-2026.json_label
 QC-sales 2025-2026_2.json_label
