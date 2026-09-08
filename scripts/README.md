@@ -45,3 +45,15 @@ python3 scripts/ingest_sales.py --keep-zips
 
 Failed imports roll back and leave the ZIP in `data/inbox/`. The database,
 logs, quarantine contents, and generated bundle are local and ignored by Git.
+
+## Budget target bundle
+
+Build the local August target bundle with:
+
+```sh
+python3 scripts/build_budget.py \
+  --input "/path/to/O2O_budget by date_202608.xlsx"
+```
+
+This reads columns for days 1–31 from the `Total LF` row on the QC, PS, and
+TOL sheets and writes ignored `budget-data.js`.

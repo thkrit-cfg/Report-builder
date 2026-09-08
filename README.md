@@ -47,9 +47,21 @@ Keep these files in the project folder:
 - `QC-sales 2025-2026_2.json_label`
 - `ps-sales 2025-2026.json_label.xlsx`
 - generated `sales-data.js`
+- generated local `budget-data.js`
 
 Open `sales-dashboard.html` after the local data bundle has been generated.
 Do not commit raw sales data or `sales-data.js` to the public repository.
+
+To build the August 2026 target bundle from the budget workbook:
+
+```sh
+python3 scripts/build_budget.py \
+  --input "/path/to/O2O_budget by date_202608.xlsx"
+```
+
+The dashboard uses the daily `Total LF` values for 1–31 August 2026 from the
+QC, PS, and TOL sheets. The inconsistent monthly AK label is intentionally
+ignored.
 
 ## Automatic CSV ZIP updates
 
