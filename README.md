@@ -19,9 +19,9 @@ Source headers are standardized as follows:
 | Store Code | `Store Code` | `Store Code` | Cleaned to `Store Code` |
 | Store Name | `Store Name` | `Store Name` | `Store Name` |
 | Head of Ops | `Head of Ops` | `Head of Ops` | `Area Rm` renamed to `Head of Ops` |
-| Transaction date | `Transaction Date Date` | `Transaction Date Date` | `Transaction Date` |
-| Net Sales | `Total Net Sales Amount` | `Total Net Sales Amount` | `Net Sales` |
-| Orders | `Total Quantity` | `Total Quantity` | `Orders` |
+| Transaction date | `Transaction Date` | `Transaction Date` | `Transaction Date` |
+| Net Sales | `Net Sales` | `Net Sales` | `Net Sales` |
+| Orders | `Orders` | `Total Transactions` mapped to `Orders` | `Orders` |
 
 Source row indexes are not part of the normalized structure.
 
@@ -42,6 +42,7 @@ Keep these files in the project folder:
 
 - `qc-sales 2025.json_label`
 - `qc-sales 2026.json_label`
+- `QC-sales 2025-2026.json_label.json_label`
 - `ps-sales 2025-2026.json_label.xlsx`
 - generated `sales-data.js`
 

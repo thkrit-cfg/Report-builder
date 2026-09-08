@@ -24,7 +24,7 @@ CREATE TABLE sales_transactions (
   transaction_date DATE NOT NULL,
   net_sales DECIMAL(18, 2) NOT NULL DEFAULT 0,
   orders DECIMAL(18, 3) NOT NULL DEFAULT 0,
-  source_file TEXT NOT NULL CHECK (source_file IN ('qc-sales 2025.json_label', 'qc-sales 2026.json_label', 'ps-sales 2025-2026.json_label.xlsx', 'tol-sales 2025-2026.json_label.xlsx'))
+  source_file TEXT NOT NULL CHECK (source_file IN ('qc-sales 2025.json_label', 'qc-sales 2026.json_label', 'QC-sales 2025-2026.json_label.json_label', 'ps-sales 2025-2026.json_label.xlsx', 'tol-sales 2025-2026.json_label.xlsx'))
 );
 
 CREATE INDEX idx_sales_transactions_date ON sales_transactions(transaction_date);

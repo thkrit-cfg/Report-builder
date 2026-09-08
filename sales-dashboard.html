@@ -112,7 +112,7 @@
     const millions = n => `${Math.round((n || 0)/1000000)}M`;
     const clean = v => String(v ?? "").trim();
     const numeric = value => Number(String(value ?? "").replace(/,/g, "")) || 0;
-    const parse = raw => raw.map(r => ({channel:clean(r["Sales Channel"]), code:clean(r["Store Code"]), store:clean(r["Store Name"]), date:clean(r["Transaction Date Date"]), year:clean(r["Transaction Date Date"]).slice(0,4), ops:clean(r["Head of Ops"]) || "Unassigned", sales:numeric(r["Total Net Sales Amount"]), orderQuantity:numeric(r["Total Quantity"])}));
+    const parse = raw => raw.map(r => {const date=clean(r["Transaction date"]||r["Transaction Date"]||r["Transaction Date Date"]), sales=numeric(r["Net Sales"]??r["Total Net Sales Amount"]), orderQuantity=numeric(r["Orders"]??r["Total Transactions"]??r["Total Quantity"]);return {channel:clean(r["Sales Channel"]||r.channel), code:clean(r["Store Code"]), store:clean(r["Store Name"]), date, year:date.slice(0,4), ops:clean(r["Head of Ops"]) || "Unassigned", sales, orderQuantity}});
     function setCopilotReply(message){$("copilotReply").textContent=message || ""}
     function refreshCopilotUI(){
       const configured=/^https?:\/\//i.test(clean(MIDDLEWARE_CONFIG.webhookUrl));
