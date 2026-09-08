@@ -6,8 +6,8 @@ O2O covers three sales streams:
 - **PS** — Personal Shopper
 - **TOL** — Tops Online
 
-The current local data bundle includes QC and PS data. TOL data can be added
-using the same normalized transaction schema.
+The current local data bundle includes QC, PS, and TOL data using the same
+normalized transaction schema.
 
 ## Copilot
 
