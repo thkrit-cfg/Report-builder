@@ -198,7 +198,7 @@
       if(preset==="last7"){setDefaultDateRange(latest);return}
       if(preset==="yesterday"){$("from").value=iso(yesterday);$("to").value=iso(yesterday);return}
       if(preset==="mtd"){const first=new Date(anchor.getFullYear(),anchor.getMonth(),1);$("from").value=iso(first);$("to").value=iso(yesterday);return}
-      if(preset==="ytd"){const first=new Date(anchor.getFullYear(),0,1),lastFullMonth=new Date(anchor.getFullYear(),anchor.getMonth(),0);lastFullMonth.setDate(lastFullMonth.getDate()-1);$("from").value=iso(first);$("to").value=iso(lastFullMonth);return}
+      if(preset==="ytd"){const first=new Date(anchor.getFullYear(),0,1),lastFullMonth=new Date(anchor.getFullYear(),anchor.getMonth(),0);$("from").value=iso(first);$("to").value=iso(lastFullMonth);return}
     }
     function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
     function apply(){
