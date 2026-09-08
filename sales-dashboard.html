@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QC Sales 2026 Dashboard</title>
+  <style>
+    :root{--bg:#f4f7fb;--panel:#fff;--ink:#172033;--muted:#667085;--line:#e4e9f1;--blue:#246bfe;--teal:#00a88f;--orange:#f79009;--purple:#7a5af8;--shadow:0 12px 30px rgba(20,38,70,.07)}
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .shell{max-width:1500px;margin:auto;padding:28px}
+    header{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-bottom:24px}
+    h1,h2,p{margin:0} h1{font-size:28px;letter-spacing:-.03em} h2{font-size:16px}
+    .subtitle{color:var(--muted);margin-top:6px}.actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    button,.file-label{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:9px;padding:10px 14px;font-weight:650;cursor:pointer}
+    .primary{background:var(--blue);border-color:var(--blue);color:#fff}.file-label input{display:none}
+    .source{font-size:12px;color:var(--muted);margin:8px 0 20px;min-height:18px}
+    .filters{display:grid;grid-template-columns:1.1fr 1.1fr 1fr 1fr 1fr auto;gap:10px;margin-bottom:18px}
+    input,select{width:100%;border:1px solid var(--line);border-radius:9px;background:#fff;padding:10px 12px;color:var(--ink);font:inherit}
+    input:focus,select:focus{outline:2px solid rgba(36,107,254,.18);border-color:var(--blue)}
+    .grid{display:grid;gap:16px}.kpis{grid-template-columns:repeat(4,1fr);margin-bottom:16px}
+    .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:18px}
+    .kpi-label{font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.07em}.kpi-value{font-size:27px;font-weight:760;margin-top:8px;letter-spacing:-.03em}.kpi-note{color:var(--muted);font-size:12px;margin-top:4px}
+    .analytics{grid-template-columns:1.6fr 1fr 1fr;margin-bottom:16px}.card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.hint{font-size:12px;color:var(--muted)}
+    .chart{height:280px;position:relative}.chart svg{width:100%;height:100%;overflow:visible}.axis{fill:var(--muted);font-size:11px}.gridline{stroke:var(--line);stroke-width:1}.bar-current{fill:var(--blue)}.bar-prior{fill:#a9bce8}.bar-label{fill:var(--ink);font-size:10px;font-weight:700}.trend-legend{display:flex;gap:16px;align-items:center;font-size:12px;color:var(--muted)}.trend-legend span{display:inline-flex;align-items:center;gap:6px}.trend-legend i{display:inline-block;width:9px;height:9px;border-radius:2px}.trend-compare{display:flex;gap:18px;flex-wrap:wrap;margin-top:4px;font-size:12px;color:var(--muted)}.trend-compare strong{color:var(--ink)}.positive{color:var(--teal)!important}.negative{color:#d92d20!important}
+    .legend{display:flex;flex-direction:column;gap:12px}.legend-row{display:grid;grid-template-columns:10px 1fr auto;gap:9px;align-items:center;font-size:13px}.dot{width:10px;height:10px;border-radius:50%}.legend-row strong{font-size:13px}.bar{height:7px;border-radius:8px;background:#edf1f7;overflow:hidden;margin-top:4px}.bar span{display:block;height:100%;border-radius:8px}
+    .table-card{padding:0;overflow:hidden}.table-head{padding:18px;display:flex;justify-content:space-between;gap:12px;align-items:center}.table-wrap{overflow:auto;max-height:520px}table{border-collapse:collapse;width:100%;min-width:760px}th,td{padding:12px 18px;text-align:left;border-top:1px solid var(--line);white-space:nowrap}th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;background:#fbfcfe;position:sticky;top:0;z-index:1}td.num{text-align:right;font-variant-numeric:tabular-nums}.rank{color:var(--muted);width:40px}.empty{text-align:center;color:var(--muted);padding:40px}
+    .status{background:#fff7e8;border:1px solid #fbd9a0;color:#925c00;border-radius:10px;padding:13px 15px;margin-bottom:18px}.status.ready{background:#edfdf8;border-color:#a7efdf;color:#087f6b}.hidden{display:none!important}
+    .subscription{margin-bottom:18px}.subscription-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr auto;gap:10px;align-items:end}.subscription-note{margin-top:8px}.subscription-list{margin-top:12px;display:flex;flex-direction:column;gap:8px}.subscription-item{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:10px 12px;background:#fbfcfe;border:1px solid var(--line);border-radius:9px;font-size:13px}.subscription-item button{padding:6px 10px;font-size:12px}
+    .copilot-panel{margin-bottom:18px}.copilot-toolbar{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.copilot-auth{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.copilot-auth-status{font-size:12px;color:var(--muted);font-weight:650}.copilot-config{margin-top:6px}.copilot-grid{display:grid;grid-template-columns:1fr auto;gap:10px;margin-top:16px}.copilot-grid textarea{width:100%;min-height:76px;resize:vertical;border:1px solid var(--line);border-radius:9px;padding:10px 12px;color:var(--ink);font:inherit}.copilot-grid textarea:focus{outline:2px solid rgba(36,107,254,.18);border-color:var(--blue)}.copilot-reply{white-space:pre-wrap;margin-top:12px;color:var(--ink)}button:disabled{cursor:not-allowed;opacity:.55}
+    @media(max-width:1050px){.analytics{grid-template-columns:1fr 1fr}.analytics .wide{grid-column:1/-1}.filters{grid-template-columns:repeat(2,1fr)}.filters button{grid-column:span 2}.kpis{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:650px){.shell{padding:18px}header{display:block}.actions{margin-top:16px}.copilot-toolbar{display:block}.copilot-auth{margin-top:12px}.copilot-grid{display:block}.copilot-grid button{margin-top:9px;width:100%}.analytics{display:block}.analytics .card{margin-bottom:16px}.filters{display:block}.filters>*{margin-bottom:9px}.kpis{gap:10px}.card{padding:14px}.kpi-value{font-size:22px}}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div><h1>QC Sales 2026</h1><p class="subtitle">Sales performance across channels, stores, and operating teams</p></div>
+      <div class="actions"><button id="copilotToggle" class="primary" type="button" aria-expanded="false" aria-controls="copilotPanel">Open Copilot</button></div>
+    </header>
+    <section id="copilotPanel" class="card copilot-panel hidden" aria-labelledby="copilotTitle">
+      <div class="copilot-toolbar">
+        <div><h2 id="copilotTitle">Copilot view assistant</h2><p id="copilotConfigStatus" class="hint copilot-config" role="status"></p></div>
+        <div class="copilot-auth"><span id="copilotAuthStatus" class="copilot-auth-status">Middleware unavailable</span></div>
+      </div>
+      <div class="copilot-grid">
+        <textarea id="copilotPrompt" aria-label="Message for Copilot" placeholder="Ask Copilot to change filters, chart granularity, or labels."></textarea>
+        <button id="copilotSend" class="primary" type="button">Apply with Copilot</button>
+      </div>
+      <div id="copilotReply" class="copilot-reply hint" role="status"></div>
+    </section>
+    <section class="filters">
+      <select id="channel"><option value="">All sales channels</option></select>
+      <select id="ops"><option value="">All heads of ops</option></select>
+      <select id="datePreset" aria-label="Date preset"><option value="last7">Last 7 days</option><option value="yesterday">Yesterday</option><option value="mtd">MTD</option><option value="ytd">YTD</option><option value="custom">Custom range</option></select>
+      <input id="from" type="date" aria-label="From date">
+      <input id="to" type="date" aria-label="To date">
+      <button id="reset" type="button">Reset filters</button>
+    </section>
+    <section class="card subscription">
+      <div class="card-head"><div><h2>Scheduled email</h2><div class="hint">Save the current filters and export choices for n8n delivery.</div></div><button id="subscriptionToggle" type="button">Add subscription</button></div>
+      <div id="subscriptionForm" class="hidden">
+        <div class="subscription-grid">
+          <input id="subscriptionEmail" type="email" placeholder="Your email address" aria-label="Recipient email">
+          <select id="subscriptionCadence" aria-label="Subscription cadence"><option value="daily">Daily</option><option value="weekly" selected>Weekly</option><option value="monthly">Monthly</option></select>
+          <select id="subscriptionFormat" aria-label="Export format"><option value="xlsx">Excel (.xlsx)</option><option value="png">Image (.png)</option><option value="xlsx,png" selected>Excel + Image</option></select>
+          <input id="subscriptionTime" type="time" value="08:00" aria-label="Delivery time">
+          <button id="saveSubscription" class="primary" type="button">Save</button>
+        </div>
+        <div class="hint subscription-note">The saved subscription includes the current date, channel, Head of Ops, search, trend, and label settings.</div>
+      </div>
+      <div id="subscriptionList" class="subscription-list"></div>
+    </section>
+    <section class="grid kpis">
+      <article class="card"><div class="kpi-label">Net sales</div><div id="sales" class="kpi-value">—</div><div id="salesNote" class="kpi-note">Load data to begin</div></article>
+      <article class="card"><div class="kpi-label">Quantity</div><div id="quantity" class="kpi-value">—</div><div id="quantityNote" class="kpi-note">Units sold</div></article>
+      <article class="card"><div class="kpi-label">Transactions</div><div id="transactions" class="kpi-value">—</div><div id="transactionsNote" class="kpi-note">Rows in current view</div></article>
+      <article class="card"><div class="kpi-label">Active stores</div><div id="stores" class="kpi-value">—</div><div id="storesNote" class="kpi-note">Unique store codes</div></article>
+    </section>
+    <section class="grid analytics">
+      <article class="card wide"><div class="card-head"><div><h2 id="trendTitle">Monthly net sales</h2><div class="trend-controls"><select id="trendGranularity" aria-label="Trend granularity"><option value="month">Monthly</option><option value="week">Weekly</option><option value="day">Daily</option></select><div id="trendLegend" class="trend-legend"></div></div></div><div class="actions"><button id="labelsToggle" type="button">Labels: On</button></div></div><div id="trend" class="chart"></div><div id="trendCompare" class="trend-compare"></div></article>
+      <article class="card"><div class="card-head"><h2>Channel mix</h2><span class="hint">by sales</span></div><div id="channels" class="legend"></div></article>
+      <article class="card"><div class="card-head"><h2>Top stores</h2><span class="hint">by sales</span></div><div id="topStores" class="legend"></div></article>
+    </section>
+    <section class="card table-card">
+      <div class="table-head"><div><h2>Store performance</h2><div id="tableHint" class="hint"></div></div><div class="actions"><input id="search" type="search" placeholder="Search store, code, or Head of Ops…" style="max-width:300px"><button id="exportXlsx" type="button">Export .xlsx</button><button id="exportPng" type="button">Export .png</button></div></div>
+      <div class="table-wrap"><table><thead><tr><th>#</th><th>Store</th><th>Code</th><th>Head of ops</th><th>Transactions</th><th>Quantity</th><th>Net sales</th></tr></thead><tbody id="rows"><tr><td colspan="7" class="empty">Load the JSON file to see store performance.</td></tr></tbody></table></div>
+    </section>
+  </main>
+  <script src="sales-data.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script>
+  (() => {
+    const $ = id => document.getElementById(id);
+    const MIDDLEWARE_CONFIG = Object.freeze({
+      webhookUrl: ""
+    });
+    const SUBSCRIPTION_CONFIG = Object.freeze({webhookUrl:""});
+    const colors = ["#246bfe","#00a88f","#f79009","#7a5af8","#ec4a9a","#667085","#12b76a","#f04438"];
+    let all = [], filtered = [], trendComparisonRows = null, showLabels = true, trendGranularity = "month";
+    const money = n => new Intl.NumberFormat("en-US",{style:"currency",currency:"THB",maximumFractionDigits:0}).format(n || 0);
+    const number = n => new Intl.NumberFormat("en-US",{maximumFractionDigits:0}).format(n || 0);
+    const clean = v => String(v ?? "").trim();
+    const numeric = value => Number(String(value ?? "").replace(/,/g, "")) || 0;
+    const parse = raw => raw.map(r => ({channel:clean(r["Sales Channel"]), code:clean(r["Store Code"]), store:clean(r["Store Name"]), date:clean(r["Transaction Date Date"]), year:clean(r["Transaction Date Date"]).slice(0,4), ops:clean(r["Head of Ops"]) || "Unassigned", sales:numeric(r["Total Net Sales Amount"]), qty:numeric(r["Total Quantity"])}));
+    function setCopilotReply(message){$("copilotReply").textContent=message || ""}
+    function refreshCopilotUI(){
+      const configured=/^https?:\/\//i.test(clean(MIDDLEWARE_CONFIG.webhookUrl));
+      $("copilotSend").disabled=!configured;
+      $("copilotAuthStatus").textContent=configured?"Middleware ready":"Middleware unavailable";
+      $("copilotConfigStatus").textContent=configured
+        ?"n8n handles Copilot Studio/backend authentication. The browser sends prompt and view settings only."
+        :"";
+    }
+    function currentViewSettings(){return {channel:$("channel").value,ops:$("ops").value,from:$("from").value,to:$("to").value,trendGranularity,showLabels}}
+    function applyViewSettings(candidate){
+      if(!candidate || typeof candidate!=="object" || Array.isArray(candidate)) throw new Error("Copilot returned invalid view settings.");
+      const rejected=[], applied={}, allowed=new Set(["channel","ops","from","to","trendGranularity","showLabels"]);
+      Object.keys(candidate).forEach(key=>{if(!allowed.has(key)) rejected.push(key)});
+      const optionValues=id=>new Set([...$(id).options].map(option=>option.value));
+      const accept=(key,valid)=>{if(!(key in candidate)) return; if(valid(candidate[key])) applied[key]=candidate[key]; else rejected.push(key)};
+      accept("channel",value=>typeof value==="string" && optionValues("channel").has(value));
+      accept("ops",value=>typeof value==="string" && optionValues("ops").has(value));
+      accept("from",value=>typeof value==="string" && (!value || /^\d{4}-\d{2}-\d{2}$/.test(value)));
+      accept("to",value=>typeof value==="string" && (!value || /^\d{4}-\d{2}-\d{2}$/.test(value)));
+      accept("trendGranularity",value=>["month","week","day"].includes(value));
+      accept("showLabels",value=>typeof value==="boolean");
+      if("channel" in applied) $("channel").value=applied.channel;
+      if("ops" in applied) $("ops").value=applied.ops;
+      if("from" in applied) $("from").value=applied.from;
+      if("to" in applied) $("to").value=applied.to;
+      if("trendGranularity" in applied){trendGranularity=applied.trendGranularity;$("trendGranularity").value=trendGranularity}
+      if("showLabels" in applied){showLabels=applied.showLabels;$("labelsToggle").textContent=`Labels: ${showLabels?"On":"Off"}`}
+      if(Object.keys(applied).length) apply();
+      return {applied,rejected:[...new Set(rejected)]};
+    }
+    async function sendCopilotPrompt(){
+      const prompt=clean($("copilotPrompt").value);
+      if(!prompt) throw new Error("Enter a request for Copilot first.");
+      const webhookUrl=clean(MIDDLEWARE_CONFIG.webhookUrl);
+      if(!/^https?:\/\//i.test(webhookUrl)){refreshCopilotUI();throw new Error("n8n middleware is not configured.")}
+      const response=await fetch(webhookUrl,{method:"POST",mode:"cors",credentials:"omit",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify({schemaVersion:1,source:"sales-dashboard",prompt,viewSettings:currentViewSettings()})});
+      if(!response.ok) throw new Error(`Copilot request failed (${response.status}).`);
+      let payload; try{payload=await response.json()}catch{throw new Error("Copilot endpoint returned a non-JSON response.")}
+      const result=payload && payload.viewSettings ? applyViewSettings(payload.viewSettings) : {applied:{},rejected:[]};
+      const reply=clean(payload && payload.reply) || (Object.keys(result.applied).length?"Copilot updated the dashboard view.":"Copilot returned no view changes.");
+      const warning=result.rejected.length?` Ignored unsupported or invalid settings: ${result.rejected.join(", ")}.`:"";
+      setCopilotReply(`${reply}${warning}`);
+    }
+    function setStatus(){ }
+    function populateFilters(){
+      const unique = key => [...new Set(all.map(x=>x[key]).filter(Boolean))].sort();
+      $("channel").innerHTML = '<option value="">All sales channels</option>' + unique("channel").map(x=>`<option>${esc(x)}</option>`).join("");
+      $("ops").innerHTML = '<option value="">All heads of ops</option>' + unique("ops").map(x=>`<option>${esc(x)}</option>`).join("");
+      const dates = all.map(x=>x.date).filter(Boolean).sort(); if(dates.length){$("from").min=dates[0];$("from").max=dates.at(-1);$("to").min=dates[0];$("to").max=dates.at(-1);setDefaultDateRange(dates.at(-1))}
+    }
+    function setDefaultDateRange(lastDate){
+      const end=new Date(`${lastDate}T00:00:00`); end.setDate(end.getDate()-6);
+      $("from").value=end.toISOString().slice(0,10); $("to").value=lastDate;
+      $("datePreset").value="last7";
+    }
+    function applyDatePreset(preset){
+      const dates=all.map(x=>x.date).filter(Boolean).sort(), latest=dates.at(-1); if(!latest)return;
+      const anchor=new Date(`${latest}T00:00:00`), yesterday=new Date(anchor); yesterday.setDate(anchor.getDate()-1);
+      const iso=d=>d.toISOString().slice(0,10);
+      if(preset==="last7"){setDefaultDateRange(latest);return}
+      if(preset==="yesterday"){$("from").value=iso(yesterday);$("to").value=iso(yesterday);return}
+      if(preset==="mtd"){const first=new Date(anchor.getFullYear(),anchor.getMonth(),1);$("from").value=iso(first);$("to").value=iso(yesterday);return}
+      if(preset==="ytd"){const first=new Date(anchor.getFullYear(),0,1),lastFullMonth=new Date(anchor.getFullYear(),anchor.getMonth(),0);lastFullMonth.setDate(lastFullMonth.getDate()-1);$("from").value=iso(first);$("to").value=iso(lastFullMonth);return}
+    }
+    function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+    function apply(){
+      const channel=$("channel").value, ops=$("ops").value, from=$("from").value, to=$("to").value, q=$("search").value.toLowerCase();
+      const matchesScope=x=>(!channel||x.channel===channel)&&(!ops||x.ops===ops);
+      filtered=all.filter(x=>matchesScope(x)&&(!from||x.date>=from)&&(!to||x.date<=to));
+      let comparisonRows=null;
+      if(from||to){
+        const anchor=(from||to).slice(0,4), priorYear=String(Number(anchor)-1);
+        const priorFrom=from?priorYear+from.slice(4):"", priorTo=to?priorYear+to.slice(4):"";
+        comparisonRows=all.filter(x=>matchesScope(x)&&x.year===priorYear&&(!priorFrom||x.date>=priorFrom)&&(!priorTo||x.date<=priorTo));
+      }
+      trendComparisonRows=comparisonRows;
+      render(filtered,q,comparisonRows); 
+    }
+    function render(rows,q,comparisonRows){
+      const sales=rows.reduce((a,x)=>a+x.sales,0), qty=rows.reduce((a,x)=>a+x.qty,0), stores=new Set(rows.map(x=>x.code)).size;
+      $("sales").textContent=money(sales); $("quantity").textContent=number(qty); $("transactions").textContent=number(rows.length); $("stores").textContent=number(stores);
+      $("salesNote").textContent=rows.length ? `Average ${money(sales/rows.length)} per transaction` : "No matching rows";
+      $("quantityNote").textContent=rows.length ? `Average ${number(qty/rows.length)} per transaction` : "Units sold";
+      $("transactionsNote").textContent=all.length ? `${((rows.length/all.length)*100).toFixed(1)}% of loaded rows` : "Rows in current view";
+      $("storesNote").textContent=stores ? `${number(stores)} unique store codes` : "Unique store codes";
+      renderTrend(rows,comparisonRows); renderBreakdown(rows,"channel","channels",8); renderBreakdown(rows,"store","topStores",5); renderTable(rows,q);
+    }
+    function trendKey(date, granularity){
+      if(granularity==="day") return date.slice(5);
+      if(granularity==="week"){
+        const d=new Date(`${date}T00:00:00`), day=(d.getDay()+6)%7, monday=new Date(d);
+        monday.setDate(d.getDate()-day);
+        const first=new Date(`${monday.getFullYear()}-01-01T00:00:00`), week=Math.floor((monday-first)/604800000)+1;
+        return `W${String(week).padStart(2,"0")}`;
+      }
+      return date.slice(5,7);
+    }
+    function trendLabel(key, granularity){
+      return key;
+    }
+    function renderTrend(rows,comparisonRows){
+      const years=[...new Set(rows.map(x=>x.year).filter(Boolean))].sort(), current=years.at(-1), prior=comparisonRows?String(Number(current)-1):years.at(-2);
+      if(!current){$("trend").innerHTML='<div class="empty">No trend data for this filter.</div>';return}
+      const totals={}; rows.forEach(x=>{const k=trendKey(x.date,trendGranularity);if(!k)return;totals[x.year] ||= {};totals[x.year][k]=(totals[x.year][k]||0)+x.sales}); (comparisonRows||[]).forEach(x=>{const k=trendKey(x.date,trendGranularity);if(!k)return;totals[prior] ||= {};totals[prior][k]=(totals[prior][k]||0)+x.sales});
+      const keys=[...new Set([...Object.keys(totals[current]||{}),...Object.keys(totals[prior]||{})])].sort(), currentValues=keys.map(k=>(totals[current]||{})[k]||0), priorValues=keys.map(k=>(totals[prior]||{})[k]||0), max=Math.max(...currentValues,...priorValues,1);
+      const w=900,h=260,p={l:54,r:12,t:28,b:34}, base=h-p.b, plotW=w-p.l-p.r, groupW=plotW/Math.max(keys.length,1), barW=Math.min(22,groupW*.29), y=v=>p.t+(base-p.t)*(1-v/max), millions=v=>`${Math.round(v/1000000)}M`;
+      const bars=(values,cls,offset,year)=>values.map((v,i)=>{const x=p.l+i*groupW+groupW/2+offset, top=y(v), label=showLabels&&v?`<text class="bar-label" x="${x+barW/2}" y="${Math.max(p.t-2,top-5)}" text-anchor="middle">${millions(v)}</text>`:"";return `<rect class="${cls}" x="${x}" y="${top}" width="${barW}" height="${Math.max(0,base-top)}" rx="3"><title>${year} ${keys[i]}: ${money(v)}</title></rect>${label}`}).join("");
+      const totalCurrent=currentValues.reduce((a,b)=>a+b,0), totalPrior=priorValues.reduce((a,b)=>a+b,0), change=priorValues.length&&totalPrior?(totalCurrent-totalPrior)/totalPrior*100:null;
+      const labelEvery=trendGranularity==="day"?Math.ceil(keys.length/12):trendGranularity==="week"?Math.ceil(keys.length/12):1;
+      $("trend").innerHTML=`<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${trendGranularity} net sales column chart"><line class="gridline" x1="${p.l}" x2="${w-p.r}" y1="${base}" y2="${base}"/><line class="gridline" x1="${p.l}" x2="${w-p.r}" y1="${y(max/2)}" y2="${y(max/2)}"/>${bars(priorValues,"bar-prior",-barW/2-2,prior||"Prior")}${bars(currentValues,"bar-current",barW/2+2,current)}${keys.map((k,i)=>i%labelEvery===0?`<text class="axis" x="${p.l+i*groupW+groupW/2}" y="${h-9}" text-anchor="middle">${trendLabel(k,trendGranularity)}</text>`:"").join("")}<text class="axis" x="${p.l-8}" y="${p.t+5}" text-anchor="end">${millions(max)}</text><text class="axis" x="${p.l-8}" y="${y(max/2)+4}" text-anchor="end">${millions(max/2)}</text></svg>`;
+      $("trendTitle").textContent=`${trendGranularity==="month"?"Monthly":trendGranularity==="week"?"Weekly":"Daily"} net sales`;
+      $("trendLegend").innerHTML=`<span><i style="background:#246bfe"></i>${current}</span>${prior?`<span><i style="background:#a9bce8"></i>${prior}</span>`:""}`;
+      const changeText=change===null?"n/a":`${change>=0?"+":""}${change.toFixed(1)}%`;
+      $("trendCompare").innerHTML=`<span>${current}: <strong>${millions(totalCurrent)}</strong></span>${prior?`<span>${prior}: <strong>${millions(totalPrior)}</strong></span><span class="${change>=0?"positive":"negative"}">YoY: <strong>${changeText}</strong></span>`:"<span>Prior-year data unavailable for this filter</span>"}`;
+    }
+    function aggregate(rows,key){const map={};rows.forEach(x=>{const k=x[key]||"Unknown"; if(!map[k])map[k]={name:k,sales:0,qty:0,count:0};map[k].sales+=x.sales;map[k].qty+=x.qty;map[k].count++});return Object.values(map).sort((a,b)=>b.sales-a.sales)}
+    function renderBreakdown(rows,key,id,limit){const data=aggregate(rows,key).slice(0,limit), total=data.reduce((a,x)=>a+x.sales,0);$(id).innerHTML=data.length?data.map((x,i)=>`<div class="legend-row"><span class="dot" style="background:${colors[i%colors.length]}"></span><div title="${esc(x.name)}">${esc(x.name)}<div class="bar"><span style="width:${total?x.sales/total*100:0}%;background:${colors[i%colors.length]}"></span></div></div><strong>${money(x.sales)}</strong></div>`).join(""):'<div class="empty">No data</div>'}
+    function renderTable(rows,q){const byStore={};rows.forEach(x=>{if(!byStore[x.store])byStore[x.store]={code:x.code,ops:x.ops,count:0,qty:0};byStore[x.store].count++;byStore[x.store].qty+=x.qty});const data=aggregate(rows,"store").filter(x=>{const s=byStore[x.name];return !q||x.name.toLowerCase().includes(q)||s.code.toLowerCase().includes(q)||s.ops.toLowerCase().includes(q)}); $("tableHint").textContent=`Showing ${number(Math.min(data.length,100))} of ${number(data.length)} stores`; $("rows").innerHTML=data.slice(0,100).map((x,i)=>{const s=byStore[x.name];return `<tr><td class="rank">${i+1}</td><td><strong>${esc(x.name)}</strong></td><td>${esc(s.code)}</td><td>${esc(s.ops)}</td><td class="num">${number(s.count)}</td><td class="num">${number(s.qty)}</td><td class="num"><strong>${money(x.sales)}</strong></td></tr>`}).join("")||'<tr><td colspan="7" class="empty">No matching stores.</td></tr>'}
+    function exportRows(){const q=$("search").value.toLowerCase(), byStore={};filtered.forEach(x=>{if(!byStore[x.store])byStore[x.store]={code:x.code,ops:x.ops,count:0,qty:0};byStore[x.store].count++;byStore[x.store].qty+=x.qty});return aggregate(filtered,"store").filter(x=>{const s=byStore[x.name];return !q||x.name.toLowerCase().includes(q)||s.code.toLowerCase().includes(q)||s.ops.toLowerCase().includes(q)}).map(x=>{const s=byStore[x.name];return {"Store":x.name,"Store Code":s.code,"Head of Ops":s.ops,"Transactions":s.count,"Quantity":Number(s.qty.toFixed(3)),"Net Sales (THB)":Number(x.sales.toFixed(2))}})}
+    function currentSubscription(){return {channel:$("channel").value,ops:$("ops").value,from:$("from").value,to:$("to").value,search:$("search").value,trendGranularity,showLabels}}
+    function savedSubscriptions(){try{return JSON.parse(localStorage.getItem("qc-sales-subscriptions")||"[]")}catch{return []}}
+    function renderSubscriptions(){const items=savedSubscriptions();$("subscriptionList").innerHTML=items.length?items.map((x,i)=>`<div class="subscription-item"><span><strong>${esc(x.email)}</strong> · ${esc(x.cadence)} · ${esc(x.formats.join(" + "))} · ${esc(x.time)}</span><button type="button" data-subscription="${i}">Remove</button></div>`).join(""):""}
+    async function saveSubscription(){
+      const email=$("subscriptionEmail").value.trim(), webhook=clean(SUBSCRIPTION_CONFIG.webhookUrl), item={email,cadence:$("subscriptionCadence").value,formats:$("subscriptionFormat").value.split(","),time:$("subscriptionTime").value,timezone:Intl.DateTimeFormat().resolvedOptions().timeZone,filters:currentSubscription()};
+      if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw new Error("Enter a valid email address.");
+      const items=savedSubscriptions().concat(item); localStorage.setItem("qc-sales-subscriptions",JSON.stringify(items)); renderSubscriptions();
+      if(/^https?:\/\//i.test(webhook)){const response=await fetch(webhook,{method:"POST",mode:"cors",credentials:"omit",headers:{"Content-Type":"application/json"},body:JSON.stringify({schemaVersion:1,source:"sales-dashboard",type:"subscription.created",subscription:item})});if(!response.ok)throw new Error(`Subscription webhook failed (${response.status}).`)}
+      $("subscriptionEmail").value="";$("subscriptionForm").classList.add("hidden");$("subscriptionToggle").textContent="Add subscription";
+    }
+    function exportXlsx(){if(!window.XLSX)throw new Error("Excel export library is unavailable.");const rows=exportRows(),sheet=XLSX.utils.json_to_sheet(rows),book=XLSX.utils.book_new();XLSX.utils.book_append_sheet(book,sheet,"Store Performance");XLSX.writeFile(book,"qc-sales-dashboard.xlsx")}
+    async function exportPng(){if(!window.html2canvas)throw new Error("Image export library is unavailable.");const canvas=await html2canvas(document.querySelector(".shell"),{backgroundColor:"#f4f7fb",scale:2});const link=document.createElement("a");link.download="qc-sales-dashboard.png";link.href=canvas.toDataURL("image/png");link.click()}
+    function load(raw){if(!Array.isArray(raw)||!raw.length)throw new Error("Expected a non-empty JSON array.");all=parse(raw);populateFilters();apply()}
+    ["channel","ops","from","to","search"].forEach(id=>$(id).addEventListener(id==="search"?"input":"change",()=>{if(id==="from"||id==="to")$("datePreset").value="custom";apply()}));
+    $("datePreset").addEventListener("change",e=>{applyDatePreset(e.target.value);apply()});
+    $("reset").addEventListener("click",()=>{["channel","ops","search"].forEach(id=>$(id).value="");const dates=all.map(x=>x.date).filter(Boolean).sort();if(dates.length)setDefaultDateRange(dates.at(-1));apply()});
+    $("labelsToggle").addEventListener("click",()=>{showLabels=!showLabels;$("labelsToggle").textContent=`Labels: ${showLabels?"On":"Off"}`;renderTrend(filtered,trendComparisonRows)});
+    $("trendGranularity").addEventListener("change",e=>{trendGranularity=e.target.value;renderTrend(filtered,trendComparisonRows)});
+    $("exportXlsx").addEventListener("click",()=>{try{exportXlsx()}catch(error){alert(error.message)}});
+    $("exportPng").addEventListener("click",()=>{exportPng().catch(error=>alert(error.message))});
+    $("subscriptionToggle").addEventListener("click",()=>{const open=$("subscriptionForm").classList.toggle("hidden")===false;$("subscriptionToggle").textContent=open?"Cancel":"Add subscription"});
+    $("saveSubscription").addEventListener("click",()=>saveSubscription().catch(error=>alert(error.message)));
+    $("subscriptionList").addEventListener("click",e=>{const button=e.target.closest("[data-subscription]");if(!button)return;const items=savedSubscriptions();items.splice(Number(button.dataset.subscription),1);localStorage.setItem("qc-sales-subscriptions",JSON.stringify(items));renderSubscriptions()});
+    renderSubscriptions();
+    $("copilotToggle").addEventListener("click",()=>{const open=$("copilotPanel").classList.toggle("hidden")===false;$("copilotToggle").setAttribute("aria-expanded",String(open));$("copilotToggle").textContent=open?"Close Copilot":"Open Copilot"});
+    $("copilotSend").addEventListener("click",()=>sendCopilotPrompt().catch(error=>setCopilotReply(error.message)));
+    refreshCopilotUI();
+    if (Array.isArray(window.QC_SALES_DATA)) load(window.QC_SALES_DATA, "embedded 2025 + 2026 data");
+  })();
+  </script>
+</body>
+</html>
