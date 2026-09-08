@@ -9,6 +9,22 @@ O2O covers three sales streams:
 The current local data bundle includes QC, PS, and TOL data using the same
 normalized transaction schema.
 
+## Canonical sales fields
+
+Source headers are standardized as follows:
+
+| Canonical field | QC source | PS source | TOL source |
+|---|---|---|---|
+| Channel identifier | `Sales Channel` | Keep channel identifier as-is | Keep channel identifier as-is |
+| Store Code | `Store Code` | `Store Code` | Cleaned to `Store Code` |
+| Store Name | `Store Name` | `Store Name` | `Store Name` |
+| Head of Ops | `Head of Ops` | `Head of Ops` | `Area Rm` renamed to `Head of Ops` |
+| Transaction date | `Transaction Date Date` | `Transaction Date Date` | `Transaction Date` |
+| Net Sales | `Total Net Sales Amount` | `Total Net Sales Amount` | `Net Sales` |
+| Orders | `Total Quantity` | `Total Quantity` | `Orders` |
+
+Source row indexes are not part of the normalized structure.
+
 ## Copilot
 
 The dashboard includes a local view assistant that works without credentials

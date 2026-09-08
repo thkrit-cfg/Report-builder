@@ -1,6 +1,5 @@
--- Combined QC sales schema for qc-sales 2025.json_label and qc-sales 2026.json_label.
--- The two source files share the same seven-column shape. This schema keeps
--- dimensions normalized while retaining one row per source transaction.
+-- Normalized O2O sales schema for QC, PS, and TOL.
+-- Source-specific headers are standardized to the canonical fields below.
 
 CREATE TABLE sales_channels (
   channel_id INTEGER PRIMARY KEY,
@@ -23,12 +22,9 @@ CREATE TABLE sales_transactions (
   channel_id INTEGER NOT NULL REFERENCES sales_channels(channel_id),
   store_code TEXT NOT NULL REFERENCES stores(store_code),
   transaction_date DATE NOT NULL,
-  net_sales_amount DECIMAL(18, 2) NOT NULL DEFAULT 0,
-  order_count INTEGER NOT NULL DEFAULT 1,
-  order_quantity DECIMAL(18, 3) NOT NULL DEFAULT 0,
-  source_file TEXT NOT NULL CHECK (source_file IN ('qc-sales 2025.json_label', 'qc-sales 2026.json_label', 'ps-sales 2025-2026.json_label.xlsx', 'tol-sales 2025-2026.json_label.xlsx')),
-  source_row_number INTEGER NOT NULL,
-  UNIQUE (source_file, source_row_number)
+  net_sales DECIMAL(18, 2) NOT NULL DEFAULT 0,
+  orders DECIMAL(18, 3) NOT NULL DEFAULT 0,
+  source_file TEXT NOT NULL CHECK (source_file IN ('qc-sales 2025.json_label', 'qc-sales 2026.json_label', 'ps-sales 2025-2026.json_label.xlsx', 'tol-sales 2025-2026.json_label.xlsx'))
 );
 
 CREATE INDEX idx_sales_transactions_date ON sales_transactions(transaction_date);
