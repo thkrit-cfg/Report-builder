@@ -80,7 +80,8 @@
     </section>
     <section class="grid kpis presentation-kpis">
       <article class="card"><div class="kpi-label">Net sales</div><div id="sales" class="kpi-value">—</div><div id="salesNote" class="kpi-note">Load data to begin</div></article>
-      <article class="card"><div class="kpi-label">Orders</div><div id="transactions" class="kpi-value">—</div><div id="transactionsNote" class="kpi-note">Source transaction rows</div></article>
+      <article class="card"><div class="kpi-label">Order Quantity</div><div id="quantity" class="kpi-value">—</div><div id="quantityNote" class="kpi-note">Units/items from source quantity</div></article>
+      <article class="card"><div class="kpi-label">AOV</div><div id="aov" class="kpi-value">—</div><div id="aovNote" class="kpi-note">Net sales / order quantity</div></article>
       <article class="card"><div class="kpi-label">Active stores</div><div id="stores" class="kpi-value">—</div><div id="storesNote" class="kpi-note">Unique store codes</div></article>
     </section>
     <section class="grid analytics">
@@ -91,7 +92,7 @@
     <section class="card presentation-table"><h2>O2O Sales Summary</h2><div class="table-wrap"><table><thead><tr><th>Channel</th><th>Actual</th><th>% Chg.</th><th>% Var.</th></tr></thead><tbody id="channelSummary"></tbody></table></div></section>
     <section class="card table-card">
       <div class="table-head"><div><h2>Store performance</h2><div id="tableHint" class="hint"></div></div><div class="actions"><input id="search" type="search" placeholder="Search store, code, or Head of Ops…" style="max-width:300px"><button id="exportXlsx" type="button">Export .xlsx</button><button id="exportPng" type="button">Export .png</button></div></div>
-      <div class="table-wrap"><table><thead><tr><th>#</th><th>Store</th><th>Code</th><th>Head of ops</th><th>Orders</th><th>Net sales</th></tr></thead><tbody id="rows"><tr><td colspan="6" class="empty">Load the JSON file to see store performance.</td></tr></tbody></table></div>
+      <div class="table-wrap"><table><thead><tr><th>#</th><th>Store</th><th>Code</th><th>Head of ops</th><th>Order Quantity</th><th>Net sales</th></tr></thead><tbody id="rows"><tr><td colspan="6" class="empty">Load the JSON file to see store performance.</td></tr></tbody></table></div>
     </section>
   </main>
   <script src="sales-data.js"></script>
@@ -111,7 +112,7 @@
     const millions = n => `${Math.round((n || 0)/1000000)}M`;
     const clean = v => String(v ?? "").trim();
     const numeric = value => Number(String(value ?? "").replace(/,/g, "")) || 0;
-    const parse = raw => raw.map(r => ({channel:clean(r["Sales Channel"]), code:clean(r["Store Code"]), store:clean(r["Store Name"]), date:clean(r["Transaction Date Date"]), year:clean(r["Transaction Date Date"]).slice(0,4), ops:clean(r["Head of Ops"]) || "Unassigned", sales:numeric(r["Total Net Sales Amount"]), orderQuantity:numeric(r["Total Quantity"]), orderCount:1}));
+    const parse = raw => raw.map(r => ({channel:clean(r["Sales Channel"]), code:clean(r["Store Code"]), store:clean(r["Store Name"]), date:clean(r["Transaction Date Date"]), year:clean(r["Transaction Date Date"]).slice(0,4), ops:clean(r["Head of Ops"]) || "Unassigned", sales:numeric(r["Total Net Sales Amount"]), orderQuantity:numeric(r["Total Quantity"])}));
     function setCopilotReply(message){$("copilotReply").textContent=message || ""}
     function refreshCopilotUI(){
       const configured=/^https?:\/\//i.test(clean(MIDDLEWARE_CONFIG.webhookUrl));
@@ -214,10 +215,11 @@
       render(filtered,q,comparisonRows); 
     }
     function render(rows,q,comparisonRows){
-      const sales=rows.reduce((a,x)=>a+x.sales,0), orderCount=rows.reduce((a,x)=>a+x.orderCount,0), stores=new Set(rows.map(x=>x.code)).size;
-      $("sales").textContent=money(sales); $("transactions").textContent=number(orderCount); $("stores").textContent=number(stores);
+      const sales=rows.reduce((a,x)=>a+x.sales,0), qty=rows.reduce((a,x)=>a+x.orderQuantity,0), stores=new Set(rows.map(x=>x.code)).size;
+      $("sales").textContent=money(sales); $("quantity").textContent=number(qty); $("aov").textContent=qty ? money(sales/qty) : "—"; $("stores").textContent=number(stores);
       $("salesNote").textContent=rows.length ? `Average ${money(sales/rows.length)} per transaction` : "No matching rows";
-      $("transactionsNote").textContent=all.length ? `Source transaction rows · ${((orderCount/all.length)*100).toFixed(1)}% of loaded rows` : "Source transaction rows";
+      $("quantityNote").textContent=rows.length ? `Units/items from source quantity · avg ${number(qty/rows.length)} per source row` : "Units/items from source quantity";
+      $("aovNote").textContent=qty ? "Net sales / order quantity" : "No matching quantity";
       $("storesNote").textContent=stores ? `${number(stores)} unique store codes` : "Unique store codes";
       renderTrend(rows,comparisonRows); renderPresentationChannels(rows,comparisonRows); renderBreakdown(rows,"store","topStores",5); renderTable(rows,q); renderPresentationHeader(rows,comparisonRows); renderChannelSummary(rows,comparisonRows);
     }
@@ -254,10 +256,10 @@
       const changeText=change===null?"n/a":`${change>=0?"+":""}${change.toFixed(1)}%`;
       $("trendCompare").innerHTML=`<span>${current}: <strong>${millions(totalCurrent)}</strong></span>${prior?`<span>${prior}: <strong>${millions(totalPrior)}</strong></span><span class="${change>=0?"positive":"negative"}">YoY: <strong>${changeText}</strong></span>`:"<span>Prior-year data unavailable for this filter</span>"}`;
     }
-    function aggregate(rows,key){const map={};rows.forEach(x=>{const k=x[key]||"Unknown"; if(!map[k])map[k]={name:k,sales:0,orderQuantity:0,orderCount:0};map[k].sales+=x.sales;map[k].orderQuantity+=x.orderQuantity;map[k].orderCount+=x.orderCount});return Object.values(map).sort((a,b)=>b.sales-a.sales)}
+    function aggregate(rows,key){const map={};rows.forEach(x=>{const k=x[key]||"Unknown"; if(!map[k])map[k]={name:k,sales:0,orderQuantity:0};map[k].sales+=x.sales;map[k].orderQuantity+=x.orderQuantity});return Object.values(map).sort((a,b)=>b.sales-a.sales)}
     function renderBreakdown(rows,key,id,limit){const data=aggregate(rows,key).slice(0,limit), total=data.reduce((a,x)=>a+x.sales,0);$(id).innerHTML=data.length?data.map((x,i)=>`<div class="legend-row"><span class="dot" style="background:${colors[i%colors.length]}"></span><div title="${esc(x.name)}">${esc(x.name)}<div class="bar"><span style="width:${total?x.sales/total*100:0}%;background:${colors[i%colors.length]}"></span></div></div><strong>${money(x.sales)}</strong></div>`).join(""):'<div class="empty">No data</div>'}
-    function renderTable(rows,q){const byStore={};rows.forEach(x=>{if(!byStore[x.store])byStore[x.store]={code:x.code,ops:x.ops,orderCount:0};byStore[x.store].orderCount+=x.orderCount});const data=aggregate(rows,"store").filter(x=>{const s=byStore[x.name];return !q||x.name.toLowerCase().includes(q)||s.code.toLowerCase().includes(q)||s.ops.toLowerCase().includes(q)}); $("tableHint").textContent=`Showing ${number(Math.min(data.length,100))} of ${number(data.length)} stores`; $("rows").innerHTML=data.slice(0,100).map((x,i)=>{const s=byStore[x.name];return `<tr><td class="rank">${i+1}</td><td><strong>${esc(x.name)}</strong></td><td>${esc(s.code)}</td><td>${esc(s.ops)}</td><td class="num">${number(s.orderCount)}</td><td class="num"><strong>${money(x.sales)}</strong></td></tr>`}).join("")||'<tr><td colspan="6" class="empty">No matching stores.</td></tr>'}
-    function exportRows(){const q=$("search").value.toLowerCase(), byStore={};filtered.forEach(x=>{if(!byStore[x.store])byStore[x.store]={code:x.code,ops:x.ops,orderCount:0};byStore[x.store].orderCount+=x.orderCount});return aggregate(filtered,"store").filter(x=>{const s=byStore[x.name];return !q||x.name.toLowerCase().includes(q)||s.code.toLowerCase().includes(q)||s.ops.toLowerCase().includes(q)}).map(x=>{const s=byStore[x.name];return {"Store":x.name,"Store Code":s.code,"Head of Ops":s.ops,"Orders":s.orderCount,"Net Sales (THB)":Number(x.sales.toFixed(2))}})}
+    function renderTable(rows,q){const byStore={};rows.forEach(x=>{if(!byStore[x.store])byStore[x.store]={code:x.code,ops:x.ops};});const data=aggregate(rows,"store").filter(x=>{const s=byStore[x.name];return !q||x.name.toLowerCase().includes(q)||s.code.toLowerCase().includes(q)||s.ops.toLowerCase().includes(q)}); $("tableHint").textContent=`Showing ${number(Math.min(data.length,100))} of ${number(data.length)} stores`; $("rows").innerHTML=data.slice(0,100).map((x,i)=>{const s=byStore[x.name];return `<tr><td class="rank">${i+1}</td><td><strong>${esc(x.name)}</strong></td><td>${esc(s.code)}</td><td>${esc(s.ops)}</td><td class="num">${number(x.orderQuantity)}</td><td class="num"><strong>${money(x.sales)}</strong></td></tr>`}).join("")||'<tr><td colspan="6" class="empty">No matching stores.</td></tr>'}
+    function exportRows(){const q=$("search").value.toLowerCase(), byStore={};filtered.forEach(x=>{if(!byStore[x.store])byStore[x.store]={code:x.code,ops:x.ops};});return aggregate(filtered,"store").filter(x=>{const s=byStore[x.name];return !q||x.name.toLowerCase().includes(q)||s.code.toLowerCase().includes(q)||s.ops.toLowerCase().includes(q)}).map(x=>{const s=byStore[x.name];return {"Store":x.name,"Store Code":s.code,"Head of Ops":s.ops,"Order Quantity":Number(x.orderQuantity.toFixed(3)),"Net Sales (THB)":Number(x.sales.toFixed(2))}})}
     function currentSubscription(){return {channel:selectedChannels(),ops:$("ops").value,from:$("from").value,to:$("to").value,search:$("search").value,trendGranularity,showLabels}}
     function savedSubscriptions(){try{return JSON.parse(localStorage.getItem("qc-sales-subscriptions")||"[]")}catch{return []}}
     function renderSubscriptions(){const items=savedSubscriptions();$("subscriptionList").innerHTML=items.length?items.map((x,i)=>`<div class="subscription-item"><span><strong>${esc(x.email)}</strong> · ${esc(x.cadence)} · ${esc(x.formats.join(" + "))} · ${esc(x.time)}</span><button type="button" data-subscription="${i}">Remove</button></div>`).join(""):""}
