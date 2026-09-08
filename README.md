@@ -56,7 +56,8 @@ Do not commit raw sales data or `sales-data.js` to the public repository.
 Place the three daily channel ZIP files directly in `data/inbox/`. Use
 `QC`, `PS`, and `TOL` in each filename. Each ZIP must contain one CSV. Run
 `python3 scripts/ingest_sales.py` to merge new rows into the local SQLite
-database at `data/db/o2o-sales.sqlite3`. Exact canonical duplicates are
+database at `data/database/o2o-sales.sqlite3`. The database is local and
+Git-ignored. Exact canonical duplicates are
 skipped, `sales-data.js` is rebuilt, and successfully merged ZIP files are
 deleted. Failed imports remain in the inbox for correction and retry; inbox
 files are never recursively deleted.

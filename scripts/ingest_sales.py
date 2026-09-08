@@ -240,7 +240,7 @@ def main() -> int:
 
     root = args.root.resolve()
     inbox = root / "data" / "inbox"
-    db_path = root / "data" / "db" / "o2o-sales.sqlite3"
+    db_path = root / "data" / "database" / "o2o-sales.sqlite3"
     bundle_path = root / "sales-data.js"
     for path in (inbox, root / "data" / "logs", root / "data" / "quarantine", db_path.parent):
         path.mkdir(parents=True, exist_ok=True)
