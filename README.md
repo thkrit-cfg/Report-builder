@@ -9,6 +9,13 @@ O2O covers three sales streams:
 The current local data bundle includes QC and PS data. TOL data can be added
 using the same normalized transaction schema.
 
+## Copilot
+
+The dashboard includes a local view assistant that works without credentials
+and can change filters, date presets, trend granularity, and labels. If an n8n
+middleware webhook is configured in the HTML, requests use that backend
+instead.
+
 This repository contains the dashboard UI and database schema. Sales source
 files and the generated browser data bundle are intentionally kept local and
 are excluded by `.gitignore`.

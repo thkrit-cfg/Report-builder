@@ -40,7 +40,7 @@
     <section id="copilotPanel" class="card copilot-panel hidden" aria-labelledby="copilotTitle">
       <div class="copilot-toolbar">
         <div><h2 id="copilotTitle">Copilot view assistant</h2><p id="copilotConfigStatus" class="hint copilot-config" role="status"></p></div>
-        <div class="copilot-auth"><span id="copilotAuthStatus" class="copilot-auth-status">Middleware unavailable</span></div>
+        <div class="copilot-auth"><span id="copilotAuthStatus" class="copilot-auth-status">Local mode</span></div>
       </div>
       <div class="copilot-grid">
         <textarea id="copilotPrompt" aria-label="Message for Copilot" placeholder="Ask Copilot to change filters, chart granularity, or labels."></textarea>
@@ -106,11 +106,11 @@
     function setCopilotReply(message){$("copilotReply").textContent=message || ""}
     function refreshCopilotUI(){
       const configured=/^https?:\/\//i.test(clean(MIDDLEWARE_CONFIG.webhookUrl));
-      $("copilotSend").disabled=!configured;
-      $("copilotAuthStatus").textContent=configured?"Middleware ready":"Middleware unavailable";
+      $("copilotSend").disabled=false;
+      $("copilotAuthStatus").textContent=configured?"n8n mode":"Local mode";
       $("copilotConfigStatus").textContent=configured
         ?"n8n handles Copilot Studio/backend authentication. The browser sends prompt and view settings only."
-        :"";
+        :"Commands are applied locally. Configure n8n later for natural-language Copilot.";
     }
     function currentViewSettings(){return {channel:$("channel").value,ops:$("ops").value,from:$("from").value,to:$("to").value,trendGranularity,showLabels}}
     function applyViewSettings(candidate){
@@ -134,11 +134,33 @@
       if(Object.keys(applied).length) apply();
       return {applied,rejected:[...new Set(rejected)]};
     }
+    function applyLocalCopilot(prompt){
+      const text=prompt.toLowerCase(), changes={}, notes=[];
+      const granularity=text.includes("daily")||text.includes("day")?"day":text.includes("weekly")||text.includes("week")?"week":text.includes("monthly")||text.includes("month")?"month":null;
+      if(granularity){changes.trendGranularity=granularity;notes.push(`${granularity} trend`)}
+      if(/\b(labels?|data labels?)\s+(off|hidden|hide|disable)\b|\bturn\s+(labels?|data labels?)\s+off\b/.test(text)){changes.showLabels=false;notes.push("labels off")}
+      if(/\b(labels?|data labels?)\s+(on|show|enable)\b|\bturn\s+(labels?|data labels?)\s+on\b/.test(text)){changes.showLabels=true;notes.push("labels on")}
+      const preset=text.includes("yesterday")?"yesterday":/\bmtd\b|month to date/.test(text)?"mtd":/\bytd\b|year to date/.test(text)?"ytd":/last\s+7|past\s+7|recent\s+7/.test(text)?"last7":null;
+      if(preset){applyDatePreset(preset);$("datePreset").value=preset;notes.push(preset==="last7"?"last 7 days":preset.toUpperCase())}
+      const channelOptions=[...$("channel").options].map(option=>option.value).filter(Boolean);
+      const channelAliases={QC:"GRAB",PS:"PERSONAL SHOPPER",TOL:"TOL"};
+      const channel=channelOptions.find(value=>text.includes(value.toLowerCase())) || Object.entries(channelAliases).find(([alias,value])=>text.includes(alias.toLowerCase())&&channelOptions.includes(value))?.[1];
+      if(channel){changes.channel=channel;notes.push(channel)}
+      if(/\b(all|clear|reset)\s+(channels?|sales channels?)\b/.test(text)){changes.channel="";notes.push("all channels")}
+      const opsOptions=[...$("ops").options].map(option=>option.value).filter(Boolean);
+      const ops=opsOptions.find(value=>text.includes(value.toLowerCase()));
+      if(ops){changes.ops=ops;notes.push(ops)}
+      if(/\b(all|clear|reset)\s+(heads?|ops|operations?)\b/.test(text)){changes.ops="";notes.push("all heads of ops")}
+      if(/\b(reset|clear)\s+(all\s+)?filters?\b/.test(text)){["channel","ops","search"].forEach(id=>$(id).value="");const dates=all.map(x=>x.date).filter(Boolean).sort();if(dates.length)setDefaultDateRange(dates.at(-1));notes.push("filters reset")}
+      if(!notes.length)throw new Error("I can change filters, date presets, trend granularity, and labels. Try: “Show weekly GRAB sales with labels off.”");
+      const result=applyViewSettings(changes);
+      return `Local assistant applied: ${notes.join(", ")}.${result.rejected.length?` Ignored: ${result.rejected.join(", ")}.`:""}`;
+    }
     async function sendCopilotPrompt(){
       const prompt=clean($("copilotPrompt").value);
       if(!prompt) throw new Error("Enter a request for Copilot first.");
       const webhookUrl=clean(MIDDLEWARE_CONFIG.webhookUrl);
-      if(!/^https?:\/\//i.test(webhookUrl)){refreshCopilotUI();throw new Error("n8n middleware is not configured.")}
+      if(!/^https?:\/\//i.test(webhookUrl)){setCopilotReply(applyLocalCopilot(prompt));return}
       const response=await fetch(webhookUrl,{method:"POST",mode:"cors",credentials:"omit",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify({schemaVersion:1,source:"sales-dashboard",prompt,viewSettings:currentViewSettings()})});
       if(!response.ok) throw new Error(`Copilot request failed (${response.status}).`);
       let payload; try{payload=await response.json()}catch{throw new Error("Copilot endpoint returned a non-JSON response.")}
