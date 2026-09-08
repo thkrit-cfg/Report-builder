@@ -25,7 +25,7 @@ CREATE TABLE sales_transactions (
   transaction_date DATE NOT NULL,
   net_sales_amount DECIMAL(18, 2) NOT NULL DEFAULT 0,
   quantity DECIMAL(18, 3) NOT NULL DEFAULT 0,
-  source_file TEXT NOT NULL CHECK (source_file IN ('qc-sales 2025.json_label', 'qc-sales 2026.json_label')),
+  source_file TEXT NOT NULL CHECK (source_file IN ('qc-sales 2025.json_label', 'qc-sales 2026.json_label', 'ps-sales 2025-2026.json_label.xlsx')),
   source_row_number INTEGER NOT NULL,
   UNIQUE (source_file, source_row_number)
 );

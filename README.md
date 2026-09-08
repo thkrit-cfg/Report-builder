@@ -10,6 +10,7 @@ Keep these files in the project folder:
 
 - `qc-sales 2025.json_label`
 - `qc-sales 2026.json_label`
+- `ps-sales 2025-2026.json_label.xlsx`
 - generated `sales-data.js`
 
 Open `sales-dashboard.html` after the local data bundle has been generated.
