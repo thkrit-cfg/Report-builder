@@ -245,13 +245,22 @@ def main() -> int:
     for path in (inbox, root / "data" / "logs", root / "data" / "quarantine", db_path.parent):
         path.mkdir(parents=True, exist_ok=True)
 
-    zips = sorted(inbox.glob("*.zip"))
-    if not zips:
-        print("No ZIP files found in data/inbox; nothing to merge.")
-        return 0
-
     connection = sqlite3.connect(db_path)
     connection.executescript(schema_sql())
+    zips = sorted(inbox.glob("*.zip"))
+    if not zips:
+        bundle_rows = None
+        if not args.no_bundle and not bundle_path.exists():
+            bundle_rows = write_bundle(connection, bundle_path)
+        connection.close()
+        print(json.dumps({
+            "database": str(db_path),
+            "batches": [],
+            "bundle_rows": bundle_rows,
+            "message": "No ZIP files found; initialized blank local data stores." if bundle_rows == 0 else "No ZIP files found; existing data preserved.",
+        }, indent=2))
+        return 0
+
     summaries = []
     try:
         with connection:

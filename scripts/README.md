@@ -27,6 +27,10 @@ Run:
 python3 scripts/ingest_sales.py
 ```
 
+If the inbox is empty, the command initializes the blank SQLite database and
+an empty `sales-data.js` bundle when they do not already exist. Existing
+database and bundle contents are preserved.
+
 The command creates or updates `data/db/o2o-sales.sqlite3`, records each ZIP
 in `ingestion_batches`, ignores exact duplicate canonical rows, rebuilds the
 local `sales-data.js`, and deletes only each successfully merged ZIP. It never
