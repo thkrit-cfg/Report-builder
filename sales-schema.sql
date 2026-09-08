@@ -27,6 +27,20 @@ CREATE TABLE sales_transactions (
   source_file TEXT NOT NULL CHECK (source_file IN ('qc-sales 2025.json_label', 'qc-sales 2026.json_label', 'QC-sales 2025-2026.json_label.json_label', 'ps-sales 2025-2026.json_label.xlsx', 'tol-sales 2025-2026.json_label.xlsx'))
 );
 
+CREATE TABLE budget_targets (
+  target_id INTEGER PRIMARY KEY,
+  channel_id INTEGER NOT NULL REFERENCES sales_channels(channel_id),
+  target_date DATE NOT NULL,
+  target_type TEXT NOT NULL DEFAULT 'Total LF',
+  target_amount DECIMAL(18, 2) NOT NULL,
+  source_file TEXT NOT NULL,
+  source_sha256 TEXT NOT NULL,
+  target_hash TEXT NOT NULL UNIQUE,
+  merged_at TEXT NOT NULL
+);
+
 CREATE INDEX idx_sales_transactions_date ON sales_transactions(transaction_date);
 CREATE INDEX idx_sales_transactions_channel ON sales_transactions(channel_id);
 CREATE INDEX idx_sales_transactions_store ON sales_transactions(store_code);
+CREATE INDEX idx_budget_targets_date ON budget_targets(target_date);
+CREATE INDEX idx_budget_targets_channel ON budget_targets(channel_id);

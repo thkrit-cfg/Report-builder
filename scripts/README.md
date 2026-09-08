@@ -52,8 +52,13 @@ Build the local August target bundle with:
 
 ```sh
 python3 scripts/build_budget.py \
-  --input "/path/to/O2O_budget by date_202608.xlsx"
+  --input "/path/to/O2O_budget by date_202608.xlsx" \
+          "/path/to/O2O_budget by date_202609.xlsx" \
+          "/path/to/O2O_budget by date_202610.xlsx"
 ```
 
 This reads columns for days 1–31 from the `Total LF` row on the QC, PS, and
-TOL sheets and writes ignored `budget-data.js`.
+TOL sheets, merges them into the ignored
+`data/database/o2o-sales.sqlite3` `budget_targets` table, and writes combined
+ignored `budget-data.js`. The month is read from each filename’s `YYYYMM`
+suffix.

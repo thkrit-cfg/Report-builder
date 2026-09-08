@@ -56,12 +56,16 @@ To build the August 2026 target bundle from the budget workbook:
 
 ```sh
 python3 scripts/build_budget.py \
-  --input "/path/to/O2O_budget by date_202608.xlsx"
+  --input "/path/to/O2O_budget by date_202608.xlsx" \
+          "/path/to/O2O_budget by date_202609.xlsx" \
+          "/path/to/O2O_budget by date_202610.xlsx"
 ```
 
-The dashboard uses the daily `Total LF` values for 1–31 August 2026 from the
-QC, PS, and TOL sheets. The inconsistent monthly AK label is intentionally
-ignored.
+The dashboard uses daily `Total LF` values for 1–31 August, September, and
+October 2026 from the QC, PS, and TOL sheets. The inconsistent monthly AK
+label is intentionally ignored. Targets are merged into the local
+`budget_targets` table in `data/database/o2o-sales.sqlite3` with source file
+and content hash metadata.
 
 ## Automatic CSV ZIP updates
 
