@@ -216,7 +216,7 @@
     }
     function render(rows,q,comparisonRows){
       const sales=rows.reduce((a,x)=>a+x.sales,0), qty=rows.reduce((a,x)=>a+x.orderQuantity,0), stores=new Set(rows.map(x=>x.code)).size;
-      $("sales").textContent=money(sales); $("quantity").textContent=number(qty); $("aov").textContent=qty ? money(sales/qty) : "—"; $("stores").textContent=number(stores);
+      $("sales").textContent=money(sales); $("quantity").textContent=number(qty); $("aov").textContent=rows.length ? money(sales/rows.length) : "—"; $("stores").textContent=number(stores);
       renderTrend(rows,comparisonRows); renderPresentationChannels(rows,comparisonRows); renderBreakdown(rows,"store","topStores",5); renderTable(rows,q); renderPresentationHeader(rows,comparisonRows); renderChannelSummary(rows,comparisonRows);
     }
     function presentationChannel(row){const channel=(row.channel||"").toUpperCase();if(channel==="PERSONAL SHOPPER"||channel==="PS")return "PS";if(channel==="TOL"||channel==="TOPS ONLINE")return "TOL";return "QC"}
